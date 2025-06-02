@@ -2,8 +2,12 @@
 """Run the ChatterBloke API server."""
 
 import logging
+import os
 import sys
 from pathlib import Path
+
+# Fix for protobuf compatibility issues on some systems
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
 # Add project root to Python path
 sys.path.insert(0, str(Path(__file__).parent))

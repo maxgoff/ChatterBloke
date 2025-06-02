@@ -273,17 +273,23 @@ class TTSService:
                 # First, ensure all chunks have the same number of channels
                 processed_chunks = []
                 for chunk in wav_chunks:
-                    if chunk.ndim == 1:
+                    # Convert to numpy if it's a tensor
+                    if hasattr(chunk, 'cpu'):
+                        chunk_np = chunk.cpu().numpy()
+                    else:
+                        chunk_np = chunk
+                        
+                    if chunk_np.ndim == 1:
                         # Single channel audio
-                        processed_chunks.append(chunk)
+                        processed_chunks.append(chunk_np)
                     else:
                         # Multi-channel, take first channel or average
-                        if chunk.shape[0] < chunk.shape[1]:
+                        if chunk_np.shape[0] < chunk_np.shape[1]:
                             # Shape is (channels, samples)
-                            processed_chunks.append(chunk[0])
+                            processed_chunks.append(chunk_np[0])
                         else:
                             # Shape is (samples, channels)
-                            processed_chunks.append(chunk[:, 0])
+                            processed_chunks.append(chunk_np[:, 0])
                 
                 # Add small silence between chunks (0.1 second)
                 silence_samples = int(self.model.sr * 0.1)
@@ -328,8 +334,12 @@ class TTSService:
             if pitch != 1.0:
                 wav = self._adjust_pitch(wav, pitch, self.model.sr)
                 
-            # Convert to numpy array
-            audio_array = wav.cpu().numpy()
+            # Convert to numpy array if it's a tensor
+            if hasattr(wav, 'cpu'):
+                audio_array = wav.cpu().numpy()
+            else:
+                audio_array = wav
+                
             if audio_array.ndim > 1:
                 audio_array = audio_array.squeeze()
                 

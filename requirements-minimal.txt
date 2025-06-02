@@ -1,0 +1,27 @@
+# Minimal requirements to run the GUI (Phase 1)
+# This skips audio dependencies that have compatibility issues
+
+# Core GUI dependencies
+PyQt6==6.6.0
+PyQt6-Qt6==6.6.0
+PyQt6-sip==13.6.0
+
+# Database
+sqlalchemy==2.0.0
+alembic==1.12.0
+
+# Configuration
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+
+# API (Phase 3)
+fastapi==0.104.0
+uvicorn[standard]==0.24.0
+httpx==0.25.0
+python-multipart==0.0.6
+
+# Audio support (Phase 2)
+sounddevice==0.4.6
+numpy>=1.24.0  # Use version that works with your Python
+soundfile==0.12.1
