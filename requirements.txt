@@ -1,0 +1,45 @@
+# Core dependencies
+PyQt6==6.6.0
+PyQt6-Qt6==6.6.0
+PyQt6-sip==13.6.0
+fastapi==0.104.0
+uvicorn[standard]==0.24.0  # Added [standard] for better performance
+sqlalchemy==2.0.0
+alembic==1.12.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+python-multipart==0.0.6  # For file uploads
+
+# Audio dependencies (PyAudio commented out due to Python 3.13 compatibility)
+# PyAudio==0.2.13  # Install manually after: brew install portaudio
+# For now, we'll use sounddevice as alternative
+sounddevice==0.4.6
+#numpy==1.26.0  # Required for sounddevice
+librosa==0.10.1
+soundfile==0.12.1
+pydub==0.25.1
+pygame==2.5.2
+
+# ML dependencies
+ollama==0.1.7
+
+# TTS dependencies (Phase 4) - Optional due to Python 3.13 compatibility
+# For full TTS support, use Python 3.12 or earlier and uncomment:
+# torch>=2.0.0,<2.3.0
+# torchaudio>=2.0.0
+# transformers>=4.35.0
+# accelerate>=0.24.0
+# Then install chatterbox: pip install git+https://github.com/resemble-ai/chatterbox.git
+
+# LLM integration
+# Note: Ollama must be installed and running separately
+# See: https://ollama.ai for installation instructions
+
+# Development dependencies (optional)
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-qt==4.2.0
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.0
