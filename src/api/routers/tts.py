@@ -4,10 +4,11 @@ import logging
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from src.api.dependencies import get_db
@@ -254,49 +255,50 @@ async def download_generated_audio(
     )
 
 
+class QuickTTSRequest(BaseModel):
+    """Quick TTS generation request."""
+    text: str
+    voice_profile_id: Optional[int] = None
+    speed: float = 1.0
+    pitch: float = 1.0
+    emotion: str = "neutral"
+    
+
 @router.post("/generate/quick")
 async def generate_quick_speech(
-    text: str = Form(...),
-    voice_profile_id: Optional[int] = Form(None),
+    request: QuickTTSRequest,
     db: Session = Depends(get_db)
-) -> FileResponse:
+) -> Dict:
     """Generate speech quickly for preview."""
     # Get voice profile if specified
     audio_prompt_path = None
-    if voice_profile_id:
-        voice_profile = db.query(VoiceProfile).filter_by(id=voice_profile_id).first()
+    if request.voice_profile_id:
+        voice_profile = db.query(VoiceProfile).filter_by(id=request.voice_profile_id).first()
         if not voice_profile:
             raise HTTPException(status_code=404, detail="Voice profile not found")
         if voice_profile.audio_file_path:
             audio_prompt_path = voice_profile.audio_file_path
             
-    # Generate speech with default settings
+    # Generate speech with provided settings
     tts_service = get_tts_service()
     try:
         audio_array, sample_rate = await tts_service.generate_speech(
-            text=text,
-            voice_profile_id=voice_profile_id,
+            text=request.text,
+            voice_profile_id=request.voice_profile_id,
             audio_prompt_path=audio_prompt_path,
-            speed=1.0,
-            pitch=1.0,
-            emotion="neutral",
+            speed=request.speed,
+            pitch=request.pitch,
+            emotion=request.emotion,
             exaggeration=0.5,
             cfg_weight=0.5
         )
         
-        # Save to temporary file
-        temp_path = settings.outputs_dir / f"temp_{uuid.uuid4()}.wav"
-        temp_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        # Save audio
-        import soundfile as sf
-        sf.write(str(temp_path), audio_array, sample_rate)
-        
-        return FileResponse(
-            path=temp_path,
-            media_type="audio/wav",
-            filename="preview.wav"
-        )
+        # Return audio data as JSON
+        return {
+            "audio_data": audio_array.tolist(),
+            "sample_rate": sample_rate,
+            "duration": len(audio_array) / sample_rate
+        }
         
     except Exception as e:
         logger.error(f"Failed to generate quick speech: {e}")
